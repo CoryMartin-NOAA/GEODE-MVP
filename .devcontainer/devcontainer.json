@@ -2,7 +2,7 @@
 	"name": "Earth System Observation System",
 	"dockerComposeFile": "../docker-compose.yml",
 	"service": "api",
-	"workspaceFolder": "/workspaces/GEODE-MVP",
+	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
 	"features": {
 		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
 	},

@@ -7,7 +7,7 @@ import uuid
 import os
 
 # Configuration
-MQTT_BROKER = os.getenv('MQTT_BROKER', 'mosquitto')
+MQTT_BROKER = os.getenv('MQTT_BROKER', 'localhost')
 MQTT_PORT = int(os.getenv('MQTT_PORT', 1883))
 MQTT_TOPIC = 'wis2/notifications/test'
 HTTP_PORT = 8080
