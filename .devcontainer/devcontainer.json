@@ -4,7 +4,9 @@
 	"service": "api",
 	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
 	"features": {
-		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+			"baseImage": "python:3.12-slim-bookworm"
+		}
 	},
 	"customizations": {
 		"vscode": {
