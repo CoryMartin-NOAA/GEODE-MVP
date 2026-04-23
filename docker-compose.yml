@@ -1,6 +1,7 @@
 services:
   mosquitto:
     image: eclipse-mosquitto:latest
+    restart: always
     ports:
       - "1883:1883"
     volumes:
@@ -10,16 +11,19 @@ services:
 
   redpanda:
     image: docker.redpanda.com/redpandadata/redpanda:latest
+    restart: always
     command:
       - redpanda start
       - --smp 1
       - --overprovisioned
       - --memory 1G
       - --reserve-memory 0M
+      - --node-id 0
+      - --check=false
       - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
-      - --advertise-kafka-addr internal://redpanda:9092,external://redpanda:19092
+      - --advertise-kafka-addr internal://redpanda:9092,external://localhost:19092
       - --pandaproxy-addr internal://0.0.0.0:8082,external://0.0.0.0:18082
-      - --advertise-pandaproxy-addr internal://redpanda:8082,external://redpanda:18082
+      - --advertise-pandaproxy-addr internal://redpanda:8082,external://localhost:18082
       - --rpc-addr 0.0.0.0:33145
       - --advertise-rpc-addr redpanda:33145
     ports:
@@ -42,6 +46,7 @@ services:
 
   db:
     image: postgres:latest
+    restart: always
     environment:
       POSTGRES_USER: observations_user
       POSTGRES_PASSWORD: observations_password
@@ -55,6 +60,7 @@ services:
     build:
       context: .
       dockerfile: services/ingest/Dockerfile
+    restart: on-failure
     environment:
       - MQTT_BROKER=mosquitto
       - KAFKA_BOOTSTRAP_SERVERS=redpanda:9092
@@ -68,6 +74,7 @@ services:
     build:
       context: .
       dockerfile: services/processor/Dockerfile
+    restart: on-failure
     environment:
       - KAFKA_BOOTSTRAP_SERVERS=redpanda:9092
       - S3_ENDPOINT=http://minio:9000
@@ -80,14 +87,13 @@ services:
     build:
       context: .
       dockerfile: services/api/Dockerfile
+    restart: on-failure
     environment:
       - DB_URL=postgresql://observations_user:observations_password@db:5432/observations_db
     ports:
       - "8000:8000"
     depends_on:
       - db
-    volumes:
-      - ./:/workspaces/${localWorkspaceFolderBasename}
 
 volumes:
   mosquitto_data:
