@@ -13,9 +13,11 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Configuration
-MQTT_BROKER = os.getenv('MQTT_BROKER', 'localhost')
-MQTT_PORT = int(os.getenv('MQTT_PORT', 1883))
-MQTT_TOPIC = os.getenv('MQTT_TOPIC', 'wis2/notifications/#')
+MQTT_BROKER = "globalbroker.meteo.fr"  # Change if your broker is elsewhere
+MQTT_PORT = 443
+MQTT_TOPIC = "origin/a/wis2/us-noaa-nws/data/core/weather/surface-based-observations"
+MQTT_USERNAME = "everyone"
+MQTT_PASSWORD = "everyone"
 
 KAFKA_BOOTSTRAP_SERVERS = os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'localhost:19092')
 KAFKA_TOPIC = os.getenv('KAFKA_TOPIC', 'observations-raw')
@@ -100,6 +102,8 @@ def run():
     client = mqtt_client.Client()
     client.on_connect = on_connect
     client.on_message = on_message
+    client.tls_set()  # Enable TLS
+    client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
     client.connect(MQTT_BROKER, MQTT_PORT)
     client.loop_forever()
 
