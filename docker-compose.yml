@@ -14,6 +14,8 @@ services:
       - redpanda start
       - --smp 1
       - --overprovisioned
+      - --memory 1G
+      - --reserve-memory 0M
       - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
       - --advertise-kafka-addr internal://redpanda:9092,external://redpanda:19092
       - --pandaproxy-addr internal://0.0.0.0:8082,external://0.0.0.0:18082
