@@ -86,6 +86,8 @@ services:
       - "8000:8000"
     depends_on:
       - db
+    volumes:
+      - ./:/workspaces/${localWorkspaceFolderBasename}
 
 volumes:
   mosquitto_data:
