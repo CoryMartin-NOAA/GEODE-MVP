@@ -1,0 +1,60 @@
+name: earth-sys-prototype
+services:
+  minio:
+    image: minio/minio:latest
+    container_name: prototype-storage
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=password123
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:latest
+    container_name: prototype-broker
+    ports:
+      - "9092:9092"
+      - "19092:19092"
+    command:
+      - redpanda
+      - start
+      - --mode dev-container
+      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr internal://redpanda:9092,external://localhost:19092
+    volumes:
+      - redpanda_data:/var/lib/redpanda/data
+
+  postgres:
+    image: postgis/postgis:15-3.4
+    container_name: prototype-catalog
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=stac_user
+      - POSTGRES_PASSWORD=stac_password
+      - POSTGRES_DB=stac_catalog
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  ingest-worker:
+    build: .
+    container_name: prototype-ingest-worker
+    depends_on:
+      - redpanda
+
+  storage-worker:
+    build: .
+    container_name: prototype-storage-worker
+    depends_on:
+      - redpanda
+      - minio
+    command: python storage_worker.py
+
+volumes:
+  minio_data:
+  redpanda_data:
+  postgres_data:
