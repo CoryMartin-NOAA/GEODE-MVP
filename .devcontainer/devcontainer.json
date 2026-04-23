@@ -1,0 +1,17 @@
+{
+	"name": "Earth System Observation System",
+	"dockerComposeFile": "../docker-compose.yml",
+	"service": "api",
+	"workspaceFolder": "/workspaces/GEODE-MVP",
+	"features": {
+		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-python.python",
+				"ms-azuretools.vscode-docker"
+			]
+		}
+	}
+}

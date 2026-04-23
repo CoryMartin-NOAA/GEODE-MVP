@@ -1,19 +1,55 @@
-# EMC Repository Template
+# Modern Earth System Observation Ingest System
 
-Getting all the right files in the right place can be a pain. 
-This is a simple template repository that you can use to ensure you have all the right files present in your repo.
+## Overview
+This system is a modern replacement for legacy meteorological observation data ingest, quality control (QC), and storage. It supports:
+- WIS2 notifications over MQTT.
+- S3-compatible storage (MinIO) for raw data.
+- Kafka-compatible messaging (Redpanda) for asynchronous processing.
+- PostgreSQL/PostGIS for structured observation storage.
+- FastAPI for data querying.
+- Support for JSON and BUFR data formats.
 
-## Files you need
+## Architecture
+1. **Mosquitto**: MQTT broker for WIS2 notifications.
+2. **MinIO**: Object storage for raw data files.
+3. **Redpanda**: Streaming platform for orchestrating processing tasks.
+4. **PostgreSQL**: Relational database for storing decoded observations.
+5. **Ingest Service**: Listens to MQTT, downloads data, stores in MinIO, and notifies the processor via Redpanda.
+6. **Processor Service**: Consumes from Redpanda, decodes data (JSON/BUFR), performs QC, and stores in PostgreSQL.
+7. **Query API**: Provides REST endpoints to retrieve observations.
 
-These should be at the top level of your repository:
+## Getting Started
 
-* `README.md` - The `README.md` file should have a short section at the bottom
-  called "DISCLAIMER", with a really brief statement saying that code is provided on an "as is" basis, and the user assumes responsibility for its use.
-* `LICENSE` - The text of the `CC0` license.
-* `DISCLAIMER` - Disclaimer 
-   
+### Prerequisites
+- Docker and Docker Compose
+
+### Running the System
+1. Start the infrastructure and services:
+   ```bash
+   docker compose up -d
+   ```
+2. The services will be available at:
+   - API: http://localhost:8000
+   - MinIO Console: http://localhost:9001
+   - Redpanda Console: http://localhost:18082
+
+### Simulating Data Ingest
+You can use the provided simulation script to trigger the ingest process:
+```bash
+python scripts/simulate_ingest.py
+```
+
+## Testing
+Run unit tests with pytest:
+```bash
+export PYTHONPATH=$PYTHONPATH:.
+pytest tests/
+```
+
 ## License
-
 This project is part of NOAA-EMC Ecosystem. 
 
 See LICENSE and DISCLAIMER for details.
+
+## DISCLAIMER
+This code is provided on an "as is" basis, and the user assumes responsibility for its use.
