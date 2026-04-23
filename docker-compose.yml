@@ -1,4 +1,14 @@
 services:
+  mockdata:
+    build:
+      context: ./services/mockdata
+      dockerfile: Dockerfile
+    environment:
+      - DATA_ID=test-id
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
   mosquitto:
     image: eclipse-mosquitto:latest
     restart: always

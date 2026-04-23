@@ -3,15 +3,13 @@ import time
 import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from paho.mqtt import client as mqtt_client
-import uuid
 import os
 
-# Configuration
+HTTP_PORT = 8080
 MQTT_BROKER = os.getenv('MQTT_BROKER', 'mosquitto')
 MQTT_PORT = int(os.getenv('MQTT_PORT', 1883))
-MQTT_TOPIC = 'wis2/notifications/test'
-HTTP_PORT = 8080
-DATA_ID = str(uuid.uuid4())
+MQTT_TOPIC = os.getenv('MQTT_TOPIC', 'wis2/notifications/test')
+DATA_ID = os.getenv('DATA_ID', 'test-id')
 
 class MockDataHandler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -74,16 +72,9 @@ def publish_notification():
     print(f"Published notification for {DATA_ID}")
 
 if __name__ == '__main__':
-    # Start HTTP server in a separate thread
     daemon = threading.Thread(target=run_http_server, daemon=True)
     daemon.start()
-
-    # Wait for server to start
     time.sleep(2)
-
-    # Publish notification
     publish_notification()
-
-    # Keep alive for a bit to allow download
-    time.sleep(5)
+    time.sleep(30)
     print("Simulation finished")
