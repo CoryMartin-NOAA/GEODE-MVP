@@ -1,0 +1,93 @@
+services:
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    ports:
+      - "1883:1883"
+    volumes:
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_log:/mosquitto/log
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:latest
+    command:
+      - redpanda start
+      - --smp 1
+      - --overprovisioned
+      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr internal://redpanda:9092,external://redpanda:19092
+      - --pandaproxy-addr internal://0.0.0.0:8082,external://0.0.0.0:18082
+      - --advertise-pandaproxy-addr internal://redpanda:8082,external://redpanda:18082
+      - --rpc-addr 0.0.0.0:33145
+      - --advertise-rpc-addr redpanda:33145
+    ports:
+      - "19092:19092"
+      - "18082:18082"
+    volumes:
+      - redpanda_data:/var/lib/redpanda/data
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio_data:/data
+
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: observations_user
+      POSTGRES_PASSWORD: observations_password
+      POSTGRES_DB: observations_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  ingest:
+    build:
+      context: .
+      dockerfile: services/ingest/Dockerfile
+    environment:
+      - MQTT_BROKER=mosquitto
+      - KAFKA_BOOTSTRAP_SERVERS=redpanda:9092
+      - S3_ENDPOINT=http://minio:9000
+    depends_on:
+      - mosquitto
+      - redpanda
+      - minio
+
+  processor:
+    build:
+      context: .
+      dockerfile: services/processor/Dockerfile
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=redpanda:9092
+      - S3_ENDPOINT=http://minio:9000
+      - DB_URL=postgresql://observations_user:observations_password@db:5432/observations_db
+    depends_on:
+      - redpanda
+      - db
+
+  api:
+    build:
+      context: .
+      dockerfile: services/api/Dockerfile
+    environment:
+      - DB_URL=postgresql://observations_user:observations_password@db:5432/observations_db
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+volumes:
+  mosquitto_data:
+  mosquitto_log:
+  redpanda_data:
+  minio_data:
+  postgres_data:

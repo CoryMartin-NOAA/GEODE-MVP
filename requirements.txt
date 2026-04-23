@@ -1,0 +1,10 @@
+paho-mqtt
+confluent-kafka
+boto3
+psycopg2-binary
+fastapi
+uvicorn
+httpx
+pydantic
+python-dotenv
+pybufrkit
